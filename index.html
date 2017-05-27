@@ -1,40 +1,381 @@
-<!DOCTYPE html>
-<html lang="zh-cn">
-<head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-	<title>看世界</title>
-	<link rel="stylesheet" href="css/style.css">
-</head>
-<body>
+<!doctype html>
+<html>
+	<head>
+		<title></title>
+		<meta charset = "utf-8"/>
+	</head>
 
-<header id="header">
-	<base target="_blank" />
-	<div class="center">
-		<h1 class="logo">音乐会</h1>
-		<nav class="link">
-			<h2 class="none">音乐会</h2>
-			<ul>
-				<li><a href="index.html">音乐会</a></li>
+<script type="text/javascript">
+var myTop = 450;
+var myLeft = 250;
+var enemySize=[{"idNum":"01","width":40,"height":30,"src":"images/plain1.png","speed":4,
+				"boom1":"images/plain1_die1.png","boom2":"images/plain1_die2.png",
+				"boom3":"images/plain1_die3.png"},
+				{"idNum":"02","width":70,"height":80,"src":"images/plain2.png","speed":3,
+				"boom1":"images/plain2_die1.png","boom2":"images/plain2_die2.png",
+				"boom3":"images/plain2_die3.png","boom4":"images/plain2_die4.png"}];
+var iamAlive = true;
+function myplane(ord){//自家飞机移动
+	if(iamAlive==true){
+		var myplane = document.getElementById("myplane").children[0];
+		myplane.src = "images/me.png";
+			
+			myLeft = ord.clientX-300;
+			myTop =	ord.clientY-10;
+			
+			myplane.style.left =  myLeft +"px";
+			myplane.style.top =	 myTop   +"px";
+
+		var enemy = document.getElementById("enemy").children;
+		for(var i =0;i<enemy.length;i++){
+			if( enemy[i].isCash==false && //enemy[i].idNum=="01"&&//1很麻烦
+				  (
+					((myTop+30)>parseInt(enemy[i].style.top)&&//在上方
+					(myTop+30)<(parseInt(enemy[i].style.top)+parseInt(enemy[i].style.height)))
+					||
+					(((myTop+20)<parseInt(enemy[i].style.top)&& //在下方
+					((myTop+20)+30)>parseInt(enemy[i].style.top)))
+					
+				  )&&
+				((  (myLeft-40)>parseInt(enemy[i].style.left)&&
+				(myLeft-40)<(parseInt(enemy[i].style.left)+parseInt(enemy[i].style.width)))
+				||
+				(  (myLeft-40)<parseInt(enemy[i].style.left)&& 
+				(myLeft+30)>parseInt(enemy[i].style.left))
+				)
+			  
+			)
+			{
+				iamAlive=false;
+				setTimeout("gameOver1()",100);
+				console.log("iamAlive="+iamAlive);
+				 clearInterval(myTime       );
+				 clearInterval(myfireTime   );
+							   
+				 clearInterval(enemyTime    );
+				 clearInterval(enemymoveTime);
+			}
+		}	
+	}
+}
+
+function gameOver1(){
+	var myplane = document.getElementById("myplane").children[0];
+		myplane.src = "images/me_die1.png";
+		setTimeout("gameOver2()",100);
+}
+function gameOver2(){
+	var myplane = document.getElementById("myplane").children[0];
+		myplane.src = "images/me_die2.png";
+		setTimeout("gameOver3()",100);
+}
+function gameOver3(){
+	var myplane = document.getElementById("myplane").children[0];
+		myplane.src = "images/me_die3.png";
+		setTimeout("gameOver4()",100);
+}
+function gameOver4(){
+	var myplane = document.getElementById("myplane").children[0];
+		myplane.src = "images/me_die4.png";
+		setTimeout("alert('朋友，你被击中了')",1000);
+}
+
+
+var myTime;
+var myfireTime;   
+var enemyTime;    
+var enemymoveTime;
+function gameBegin(){
+	myTime        = setInterval("creatMyFire()",200);//制造弹药
+	myfireTime    = setInterval("moveMyFire()",10);//移动我方弹药	
+	enemyTime     = setInterval("creatEnemy()",500);//产生敌机
+	enemymoveTime = setInterval("moveEnemy()",10);//敌机移动
+	
+}
+function creatMyFire(){
+
+	var fire = document.createElement("img");
+	document.getElementById("myplaneFire").appendChild(fire);
+
+	fire.style.cssText = "width:7px;height:18px;position:absolute;";
+	fire.src = "images/bullet.png";
+	fire.style.left = (myLeft-6)+"px";
+	fire.style.top = myTop +"px";
+	fire.isCash=false;
+	console.log("firenum"+document.getElementById("myplaneFire").children.length);
+}
+function creatEnemy(){//制造敌机
+	var enemy = document.createElement("img");
+	document.getElementById("enemy").appendChild(enemy);
+	enemy.style.cssText = "position:absolute";
+	var i = parseInt(Math.random()*10);
+	if(i<8){
+		var k=0;
+	}else{
+		var k=1;
+	}
+		enemy.style.width = enemySize[k].width +"px";
+		enemy.style.height = enemySize[k].height +"px";
+		enemy.src = enemySize[k].src;
+		enemy.idNum = enemySize[k].idNum;
+	//出生的位置
+		enemy.style.left = parseInt((Math.random()*391)+10)+"px";
+		enemy.style.top = 0+"px";
+		enemy.stop=false;
+		enemy.isCash=false;
+		enemy.num = -1;
+		console.log("enemy"+document.getElementById("enemy").children.length);
+}
+function moveEnemy(){
+	var enemy = document.getElementById("enemy").children;
+
+	for(var i=0;i<enemy.length;i++){
+		if(enemy[i].idNum=="01" && enemy[i].stop==false ){
+			enemy[i].style.top =(parseInt(enemy[i].style.top)+enemySize[0].speed)+"px";
+		}else if(enemy[i].idNum=="02"&& enemy[i].stop==false ){
+			enemy[i].style.top =(parseInt(enemy[i].style.top)+enemySize[1].speed)+"px";
+		}
 		
-			</ul>
-		</nav>
-	</div>
-</header>
+		if(parseInt(enemy[i].style.top)>=1000){
+			document.getElementById("enemy").removeChild(enemy[i]);
+		}
+	}
+	if(iamAlive==true){
+	
+		var myplane = document.getElementById("myplane").children[0];
+		var enemy = document.getElementById("enemy").children;
+			for(var i =0;i<enemy.length;i++){
+				if( enemy[i].isCash==false && //enemy[i].idNum=="01"&&//1很麻烦
+					  (
+						((myTop+10)>parseInt(enemy[i].style.top)&&//在上方
+						(myTop+10)<(parseInt(enemy[i].style.top)+parseInt(enemy[i].style.height)))
+						||
+						(((myTop+20)<parseInt(enemy[i].style.top)&& //在下方
+						((myTop+20)+30)>parseInt(enemy[i].style.top)))
+						
+					  )&&
+					((  (myLeft-40)>parseInt(enemy[i].style.left)&&
+					(myLeft-40)<(parseInt(enemy[i].style.left)+parseInt(enemy[i].style.width)))
+					||
+					(  (myLeft-40)<parseInt(enemy[i].style.left)&& 
+					(myLeft+30)>parseInt(enemy[i].style.left))
+					)
+				  
+				)
+				{
+					iamAlive=false;
+					setTimeout("gameOver1()",100);
+					console.log("iamAlive="+iamAlive);
+					 clearInterval(myTime       );
+					 clearInterval(myfireTime   );
+								   
+					 clearInterval(enemyTime    );
+					 clearInterval(enemymoveTime);
+				}
+			}
+	}
+}
+var dieNum=0;
+function moveMyFire(){
+	
+	var fire = document.getElementById("myplaneFire").children;
+	
+	for(var i=0;i<fire.length;i++){
+			
+			fire[i].style.top = (parseInt(fire[i].style.top)-6)+"px";
+	}
+	var removeArry = [];
+	for(var i=0;i<fire.length;i++){
+		if(parseInt(fire[i].style.top)<-18){
+			removeArry.push(i);	
+		
+		}
+	}
+	for(var i=0;i<removeArry.length;i++){
+		document.getElementById("myplaneFire").removeChild(fire[removeArry[i]]);
+	
+	}
+	
+	
+	
+	var enemy = document.getElementById("enemy").children;
+	for(var i=0;i<fire.length;i++){
+	
+		for(var j=0;j<enemy.length;j++){
+		
+			if( enemy[j].isCash==false && fire[i].isCash==false &&
+			 (parseInt(fire[i].style.top)>=(parseInt(enemy[j].style.top))) &&
+			 (parseInt(fire[i].style.top)<=(parseInt(enemy[j].style.top)+parseInt(enemy[j].style.height)))&&
+			(parseInt(fire[i].style.left)>=parseInt(enemy[j].style.left))&&
+			((parseInt(fire[i].style.left)+parseInt(fire[i].style.width))<=
+			(parseInt(enemy[j].style.left)+parseInt(enemy[j].style.width))))
+			{	
+					enemy[j].num = dieNum;
+					enemy[j].isCash=true;
+					enemy[j].stop = true;
+					fire[i].isCash=true;
+					setTimeout("boom1("+i+","+dieNum+")",5);
+					dieNum++;
+			}
 
-<div id="headline">
-	<img src="img/headline.jpeg" alt="">
-	<hgroup>
-		<br>
-		<br>
-		<h2 style="color:green">音乐会</h2>
-		<h3 style="color:green">你站在桥上看风景，看风景的人在桥上看你</h3>
-	</hgroup>
-</div>
-  
-  
-  
- 
-  
+		}
+	}
+	
+}
+
+function boom1(fireNum,emNUM){
+	
+	var fire = document.getElementById("myplaneFire").children[fireNum];
+	fire.style.display="none";
+	
+	var f;
+	for(var i = 0;i<document.getElementById("enemy").children.length;i++){
+			if(document.getElementById("enemy").children[i].num==emNUM){
+				f=i;
+				break;
+			}
+	}
+	var obj = document.getElementById("enemy").children[f];
+	
+	if(obj.idNum=="01"){
+		obj.src = enemySize[0].boom1;
+	}else if(obj.idNum=="02"){
+		obj.src = enemySize[1].boom1;
+	}
+	
+	setTimeout("boom2("+emNUM+")",100);
+}
+
+function boom2(emNUM){
+	var f;
+	for(var i = 0;i<document.getElementById("enemy").children.length;i++){
+
+			if(document.getElementById("enemy").children[i].num==emNUM){
+				
+				f=i;
+		
+				break;
+			}
+	}
+
+	var obj = document.getElementById("enemy").children[f];
+	
+	if(obj.idNum=="01"){
+		obj.src = enemySize[0].boom2;
+	}else if(obj.idNum=="02"){
+		obj.src = enemySize[1].boom2;
+	}
+	setTimeout("boom3("+emNUM+")",100);
+}
+
+function boom3(emNUM){
+	var f;
+	for(var i = 0;i<document.getElementById("enemy").children.length;i++){
+
+			if(document.getElementById("enemy").children[i].num==emNUM){
+				
+				f=i;
+				
+				break;
+			}
+	}
+
+	var obj = document.getElementById("enemy").children[f];
+	if(obj.idNum=="01"){
+		obj.src = enemySize[0].boom3;
+		setTimeout("boom5("+emNUM+")",100);
+	}else if(obj.idNum=="02"){
+		obj.src = enemySize[1].boom3;
+			setTimeout("boom4("+emNUM+")",100);
+	}
+
+}
+
+function boom4(emNUM){
+	var f;
+	for(var i = 0;i<document.getElementById("enemy").children.length;i++){
+	
+			if(document.getElementById("enemy").children[i].num==emNUM){
+				f=i;
+				break;
+			}
+	}
+	var obj = document.getElementById("enemy").children[f];
+
+		obj.src = enemySize[1].boom4;
+	
+	setTimeout("boom5("+emNUM+")",100);
+}
+function boom5(emNUM){
+	var f;
+	for(var i = 0;i<document.getElementById("enemy").children.length;i++){
+			if(document.getElementById("enemy").children[i].num==emNUM){
+				
+				f=i;
+			
+				break;
+			}
+	}
+	var obj = document.getElementById("enemy").children[f];
+	obj.style.display="none";
+	obj.stop=false;
+}
+
+</script>
+<style type="text/css">
+/********************清除样式*********************************/
+table,p,h1,h2,h3,h4,h5,h6,ul,li,ol,dl,dd,dt,div,body,input{margin:0;padding:0;}
+a{text-decoration:none;}
+ul,ol,li{list-style:none;}
+body{font:12px "微软雅黑";}
+body,html{width:100%;height:100%;}
+img{display:block;border:0;}
+i,em{font-style:normal;}
+b,strong{font-weight:100;}
+.clear:after{content:".";display:block;clear:both;overflow:hidden;height:0;visibility:hidden;}
+/********************清除样式*********************************/
+#bigBox{
+width:480px;height:650px;background:url(images/bg.jpg) no-repeat;border:1px solid #000;
+position:absolute;left:300px;top:10px;
+overflow:hidden;
+
+}
+
+#bigBox div{
+width:480px;height:650px;
+position:absolute;left:0;top:0;
+}
+#enemy img{
+
+}
+
+
+
+#bigBox #myplane{
+	z-index:1;
+}
+#bigBox #myplane img{
+width:70px;height:80px;
+position:absolute;margin-left:-40px;top:450px;left:250px;
+}
+
+
+</style>
+	
+
+<body onload="gameBegin()">
+
+	<div id="bigBox">
+		<div id="enemy"	>
+		</div>
+		<div id="enemyFire" >
+		</div>
+		<div id="myplaneFire" >
+		</div> 
+		<div id="myplane" onmousemove="myplane(event)" onmouseover="alive()">
+			<img src="images/me.png"/>
+		</div>
+	</div>
+	
 </body>
 </html>
